@@ -1,0 +1,101 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+#header {
+    background-color: #007bff;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+#header h1 {
+    margin: 0;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+div {
+    margin: 20px;
+}
+
+input[type="text"], input[type="date"], select {
+    padding: 10px;
+    margin: 10px 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 15px;
+    text-align: center;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+#week-range {
+    text-align: center;
+    margin: 20px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.yellow {
+    color: #ffeb3b;
+}
+
+#jewish-calendar th {
+    background-color: #007bff;
+    color: white;
+}
+
+#jewish-calendar td {
+    background-color: white;
+    color: black;
+}
+
+#jewish-calendar td select {
+    width: 100%;
+    padding: 5px;
+    margin: 0;
+}
+
+#jewish-calendar td input[type="hidden"] {
+    display: none;
+}
+
+/* Highlight the current day */
+.current-day {
+    background-color: #007bff !important;
+    color: white !important;
+}

@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <title>מילוי משמרות</title>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #f8961e;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            direction: rtl;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            padding-top: 70px;
+        }
+        
+        .navbar {
+            box-shadow: var(--box-shadow);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+        }
+        
+        .navbar-brand img {
+            border-radius: 50%;
+            border: 2px solid white;
+            transition: var(--transition);
+        }
+        
+        .navbar-brand img:hover {
+            transform: rotate(15deg);
+        }
+        
+        .container {
+            padding: 20px;
+            max-width: 1200px;
+        }
+        
+        #week-range {
+            display: block;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            background: white;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .week-navigation {
+            text-align: center;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .week-navigation button {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            min-width: 150px;
+            justify-content: center;
+        }
+        
+        .week-navigation button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+        }
+        
+        .week-navigation button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #e0e0e0;
+            background: white;
+            margin-bottom: 30px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+        }
+        
+        th, td {
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+            text-align: center;
+            font-size: 15px;
+        }
+        
+        th {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        td:first-child {
+            font-weight: bold;
+            text-align: right;
+            background-color: #f8f9fa;
+        }
+        
+        tbody tr:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: #f1f3f5;
+        }
+        
+        tbody tr:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        .yellow {
+            color: #ffd700;
+        }
+        
+        .table-container {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .table-container.active {
+            display: block;
+        }
+        
+        select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background-color: white;
+            width: 100%;
+            max-width: 150px;
+            transition: var(--transition);
+        }
+        
+        select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+            outline: none;
+        }
+        
+        .highlight {
+            background-color: #fffacd !important;
+            font-weight: bold;
+            position: relative;
+        }
+        
+        .highlight::after {
+            content: 'היום';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--danger-color);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .btn-group {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .btn-group a {
+            border-radius: var(--border-radius);
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .btn-group a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4cc9f0, #4895ef);
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f8961e, #f3722c);
+            border: none;
+            color: white;
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .user-info span {
+            font-size: 0.85rem;
+        }
+           #userRole {
+  color: inherit;
+  font-weight: normal;
+  text-decoration: none;
+  
+  color: white;
+}
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+     
+        
+        /* ריספונסיביות */
+        @media (max-width: 992px) {
+            .container {
+                padding: 15px;
+            }
+            
+            th, td {
+                padding: 10px;
+                font-size: 14px;
+            }
+            
+            #week-range {
+                font-size: 1.1rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding-top: 60px;
+            }
+            
+            th, td {
+                padding: 8px;
+                font-size: 13px;
+            }
+            
+            .week-navigation button {
+                padding: 8px 15px;
+                font-size: 14px;
+                min-width: 120px;
+            }
+            
+            .btn-group a {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+            
+            #week-range {
+                font-size: 1rem;
+                padding: 8px;
+            }
+        }
+        
+
+@media (max-width: 776px) {
+    /* ביטול כל עיצוב ה-select בנייד */
+    select.form-select {
+        -webkit-appearance: menulist !important;
+        -moz-appearance: menulist !important;
+        appearance: menulist !important;
+        background-image: none !important;
+        padding: 6px 8px !important;
+        width: auto !important;
+        max-width: 100% !important;
+        text-align: right !important;
+        direction: rtl !important;
+        opacity: 1 !important;
+               ;
+
+    }
+    
+    /* ביטול כל התוספות הקודמות */
+    .select-container::after,
+    .select-container[data-selected] {
+        display: none !important;
+    }
+    
+    /* שחזור תצוגת ברירת המחדל */
+    td {
+        min-height: auto !important;
+        position: static !important;
+    }
+    
+    /* עיצוב בסיסי בלבד */
+    select.form-select {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: white;
+        font-size: 10px;
+    }
+    
+    /* תצוגה ברורה של הערך הנבחר */
+    select.form-select option:checked {
+        background-color: #e9ecef;
+        font-weight: bold;
+    }
+    th{
+        font-size: 10px;
+    }
+    td{
+        padding: 0px;
+        margin: 0px;
+        font-size:10px;
+    }
+         #userRole {
+  color: inherit;
+  font-weight: normal;
+  text-decoration: none;
+  
+  color: white;
+}
+}
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand mx-3" href="#">
+                <img src="enter.jpg" width="45" height="45" alt="Logo">
+            </a>
+            
+            <!-- פרטי משתמש - בצד ימין -->
+     <!-- פרטי משתמש - בצד ימין -->
+<div class="d-none d-lg-flex align-items-center">
+    <div class="user-info text-white me-3">
+        <span id="userNameName"><i class="fas fa-user-circle me-1"></i> שם משתמש</span>
+        <span id="userBranch"><i class="fas fa-building me-1"></i> סניף</span>
+        <span id="userRole"><i class="fas fa-user-tag me-1"></i> תפקיד</span>
+        <!-- הכפתור לניהול שיוצג רק למנהלים -->
+        <a id="adminLink" href="admin.html" class="d-none ms-2" style="color: white; text-decoration: none;">
+            <i class="fas fa-cog me-1"></i> ניהול
+        </a>
+    </div>
+</div>
+            
+            <!-- כפתור בורגר (למסכים קטנים) -->
+            <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- תפריט ניווט -->
+            <div class="collapse navbar-collapse" id="collapsibleNavbar">
+                <ul class="navbar-nav ms-auto">
+                    <!-- פרטי משתמש במסך קטן -->
+                    <li class="nav-item d-block d-lg-none">
+                        <div class="user-info text-white px-3 py-2">
+                            <span id="userNameMobile"><i class="fas fa-user-circle me-1"></i> שם משתמש | סניף | תפקיד</span>
+                        </div>
+                    </li>
+                    
+                    <!-- כפתור יציאה -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="" onclick="logout()">
+                            <i class="fas fa-sign-out-alt me-1"></i> יציאה
+                        </a>
+                    </li>
+                           <a class="nav-link"  href="admin.html">
+                     <i class="fas fa-user-tag me-1"></i> ניהול
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <h3 class="text-center mb-4 text-primary">
+            <i class="fas fa-calendar-alt me-2"></i>דף מילוי משמרות
+        </h3>
+        
+        <span id="week-range"></span>
+        
+        <div class="week-navigation">
+            <button id="previous-week-button">
+                <i class="fas fa-chevron-left"></i> שבוע קודם
+            </button>
+            <button id="next-week-button">
+                שבוע הבא <i class="fas fa-chevron-right"></i>
+            </button>
+            <button id="toggle-tables-button" class="btn-warning">
+                <i class="fas fa-exchange-alt"></i> החלף טבלה
+            </button>
+        </div>
+        
+        <div id="table1" class="table-container active">
+            <div class="table-responsive">
+                <table id="jewish-calendar" class="table-hover">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-calendar-week"></i></th>
+                            <th id="y1">ראשון <i class="fas fa-sun yellow"></i></th>
+                            <th id="y2">שני <i class="fas fa-sun yellow"></i></th>
+                            <th id="y3">שלישי <i class="fas fa-sun yellow"></i></th>
+                            <th id="y4">רביעי <i class="fas fa-sun yellow"></i></th>
+                            <th id="y5">חמישי <i class="fas fa-sun yellow"></i></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Calendar rows will be added dynamically here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="table2" class="table-container">
+            <div class="table-responsive">
+                <table id="jewish-calendar2" class="table-hover">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-calendar-week"></i></th>
+                            <th id="y1">ראשון <i class="fas fa-sun yellow"></i></th>
+                            <th id="y2">שני <i class="fas fa-sun yellow"></i></th>
+                            <th id="y3">שלישי <i class="fas fa-sun yellow"></i></th>
+                            <th id="y4">רביעי <i class="fas fa-sun yellow"></i></th>
+                            <th id="y5">חמישי <i class="fas fa-sun yellow"></i></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Calendar rows will be added dynamically here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="btn-group" role="group" aria-label="קישורים נוספים">
+            <a href="room.html" class="btn btn-success">
+                <i class="fas fa-door-open me-1"></i> הזמנת חדרים
+            </a>
+            <a href="calender.html" class="btn btn-primary">
+                <i class="fas fa-calendar-check me-1"></i> לוח אירועים
+            </a>
+            <a href="index.html" class="btn btn-warning">
+                <i class="fas fa-user-clock me-1"></i> מילוי משמרות
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let currentTable = 1;
+        const apiUrl = "https://flask-backend-tjoh.onrender.com/shifts";
+        let currentDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
+        let weekStart = new Date(currentDate);
+        let buttonsEnabled = true;
+
+  async function getUserName() {
+    const response = await fetch(apiUrl + "/getusername", {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+        }
+    });
+
+    if (response.ok) {
+        const data = await response.json();
+        
+        // עדכון פרטי המשתמש
+        document.getElementById("userNameName").innerHTML = `<i class="fas fa-user-circle me-1"></i> ${data.name}`;
+        document.getElementById("userBranch").innerHTML = `<i class="fas fa-building me-1"></i> ${data.branch}`;
+        document.getElementById("userRole").innerHTML = `<i class="fas fa-user-tag me-1"></i> ${data.role}`;
+        document.getElementById("userNameMobile").innerHTML = 
+            `<i class="fas fa-user-circle me-1"></i> ${data.name} | <i class="fas fa-building me-1"></i> ${data.branch} | <i class="fas fa-user-tag me-1"></i> ${data.role}`;
+        
+        // הצגת כפתור הניהול רק למנהלים
+        const adminLink = document.getElementById('adminLink');
+        if (data.role === 'אדמין' || data.role === 'מנהל סניף') {
+            adminLink.classList.remove('d-none');
+        } else {
+            adminLink.classList.add('d-none');
+        }
+    } else {
+        console.error('Failed to retrieve username:', response.statusText);
+    }
+}
+
+        function formatDateToIso(dateObj) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Call the function to get the username
+        getUserName();
+
+        document.getElementById('toggle-tables-button').addEventListener('click', function() {
+            if (currentTable === 1) {
+                document.getElementById('table1').classList.remove('active');
+                document.getElementById('table2').classList.add('active');
+                currentTable = 2;
+                this.innerHTML = '<i class="fas fa-exchange-alt"></i> החלף לטבלת מילוי';
+                displayCurrentWeek();
+                displayALllUsers();
+            } else {
+                document.getElementById('table1').classList.add('active');
+                document.getElementById('table2').classList.remove('active');
+                currentTable = 1;
+                this.innerHTML = '<i class="fas fa-exchange-alt"></i> החלף לטבלת משמרות';
+                displayCurrentWeek();
+                displayALllUsers();
+            }
+        });
+
+        async function fetchShifts() {
+            const jwt = localStorage.getItem('token');
+            try {
+                const response = await fetch(apiUrl + '/getshifts', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${jwt}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const responseData = await response.json();
+                return responseData.data;
+            } catch (error) {
+                console.error('Error:', error);
+                return [];
+            }
+        }
+
+        async function fetchAllShifts() {
+            const jwt = localStorage.getItem('token');
+            try {
+                const response = await fetch(apiUrl + '/getallshifts', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${jwt}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const responseData = await response.json();
+                return responseData.data;
+            } catch (error) {
+                console.error('Error:', error);
+                return [];
+            }
+        }
+
+        async function displayCurrentWeek() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+            } else {
+                getUserName();
+            }
+            
+            const shifts = await fetchShifts();
+            const tableBody = document.querySelector('#jewish-calendar tbody');
+
+            // Adjust for Sunday as the start of the week
+            const day = weekStart.getDay();
+            const diff = (day === 0 ? 0 : -day);
+            weekStart.setDate(weekStart.getDate() + diff);
+
+            tableBody.innerHTML = '';
+
+            let row1InnerHtmlMorning = '<td><i class="fas fa-sunrise me-2"></i>משמרת בוקר</td>';
+            let row1InnerHtmlAfternoon = '<td><i class="fas fa-sun me-2"></i>משמרת צהריים</td>';
+
+            // Loop through each day of the week
+            for (let i = 0; i < 5; i++) {
+                const dayDate = new Date(weekStart);
+                dayDate.setDate(weekStart.getDate() + i);
+
+                const formattedDate = formatDateToIso(dayDate);
+
+                const shiftMorning = shifts.find(shift =>
+                    formatDateToIso(new Date(shift.date)) === formattedDate &&
+                    shift.shiftType === 'בוקר'
+                );
+
+                const shiftAfternoon = shifts.find(shift =>
+                    formatDateToIso(new Date(shift.date)) === formattedDate &&
+                    shift.shiftType === 'צהריים'
+                );
+
+                row1InnerHtmlMorning += `
+                    <td>
+                        <select onchange="sendShiftData(this, '${formattedDate}', 'בוקר')" class="form-select">
+                            <option value=""></option>
+                            <option value="בית" ${shiftMorning?.location === 'בית' ? 'selected' : ''}>בית</option>
+                            <option value="סטודיו" ${shiftMorning?.location === 'סטודיו' ? 'selected' : ''}>סטודיו</option>
+                        </select>
+                    </td>
+                `;
+
+                row1InnerHtmlAfternoon += `
+                    <td>
+                        <select onchange="sendShiftData(this, '${formattedDate}', 'צהריים')" class="form-select">
+                            <option value=""></option>
+                            <option value="בית" ${shiftAfternoon?.location === 'בית' ? 'selected' : ''}>בית</option>
+                            <option value="סטודיו" ${shiftAfternoon?.location === 'סטודיו' ? 'selected' : ''}>סטודיו</option>
+                        </select>
+                    </td>
+                `;
+            }
+
+            // Create rows for each day of the week
+            const rowDate = document.createElement('tr');
+            rowDate.innerHTML = `
+                <td><i class="fas fa-calendar-day me-2"></i>תאריך</td>
+                <td id="day1">${new Date(weekStart.getTime()).getDate()}</td>
+                <td id="day2">${new Date(weekStart.getTime() + (1 * 24 * 60 * 60 * 1000)).getDate()}</td>
+                <td id="day3">${new Date(weekStart.getTime() + (2 * 24 * 60 * 60 * 1000)).getDate()}</td>
+                <td id="day4">${new Date(weekStart.getTime() + (3 * 24 * 60 * 60 * 1000)).getDate()}</td>
+                <td id="day5">${new Date(weekStart.getTime() + (4 * 24 * 60 * 60 * 1000)).getDate()}</td>
+            `;
+
+            const rowMorningShift = document.createElement('tr');
+            rowMorningShift.innerHTML = row1InnerHtmlMorning;
+
+            const rowAfternoonShift = document.createElement('tr');
+            rowAfternoonShift.innerHTML = row1InnerHtmlAfternoon;
+
+            // Append rows to the table body
+            tableBody.appendChild(rowDate);
+            tableBody.appendChild(rowMorningShift);
+            tableBody.appendChild(rowAfternoonShift);
+
+            // Highlight current date
+            highlightCurrentDate();
+            
+            // Display the week range
+            updateWeekRange();
+        }
+
+        async function displayALllUsers() {
+            const shifts = await fetchAllShifts();
+            const tableBody = document.querySelector('#jewish-calendar2 tbody');
+
+            const day = weekStart.getDay();
+            const diff = (day === 0 ? 0 : -day);
+            weekStart.setDate(weekStart.getDate() + diff);
+
+            tableBody.innerHTML = '';
+
+            let row1InnerHtmlMorning = '<td class="hey"><i class="fas fa-sunrise me-2"></i>משמרת בוקר</td>';
+            let row1InnerHtmlAfternoon = '<td class="hey"><i class="fas fa-sun me-2"></i>משמרת צהריים</td>';
+
+            // Create a map to group usernames by date and shift type
+            const shiftMap = {};
+            shifts.forEach(shift => {
+                const shiftDateObj = new Date(shift.date);
+                const formattedDate = formatDateToIso(shiftDateObj);
+                const shiftTypeHebrew = shift.shiftType;
+                const username = shift.user;
+                const location = shift.location;
+
+                const shiftTypeKey = shiftTypeHebrew === 'בוקר' ? 'morning' :
+                                     shiftTypeHebrew === 'צהריים' ? 'afternoon' : null;
+
+                if (!shiftTypeKey) return;
+
+                if (!shiftMap[formattedDate]) {
+                    shiftMap[formattedDate] = { morning: [], afternoon: [] };
+                }
+
+                if ((location === 'סטודיו' || location === 'בית')) {
+                    shiftMap[formattedDate][shiftTypeKey].push(username);
+                }
+            });
+
+            // Loop through each day of the week
+            for (let i = 0; i < 5; i++) {
+                const dayDate = new Date(weekStart);
+                dayDate.setDate(weekStart.getDate() + i);
+
+                const formattedDate = formatDateToIso(dayDate);
+                const morningUsers = (shiftMap[formattedDate] && shiftMap[formattedDate].morning) || [];
+                const afternoonUsers = (shiftMap[formattedDate] && shiftMap[formattedDate].afternoon) || [];
+
+                row1InnerHtmlMorning += `
+                    <td>
+                        ${morningUsers.length ? morningUsers.join('<br>') : '<span class="text-muted"></span>'}
+                        <input type="hidden" value="${formattedDate}">
+                    </td>
+                `;
+
+                row1InnerHtmlAfternoon += `
+                    <td>
+                        ${afternoonUsers.length ? afternoonUsers.join('<br>') : '<span class="text-muted"></span>'}
+                        <input type="hidden" value="${formattedDate}">
+                    </td>
+                `;
+            }
+
+            // Create rows for each day of the week
+            const rowDate = document.createElement('tr');
+            rowDate.innerHTML = `
+                <td><i class="fas fa-calendar-day me-2"></i>תאריך</td>
+                <td id="day1">${new Date(weekStart.getTime()).getDate()}</td>
+                <td id="day2">${new Date(weekStart.getTime() + (1 * 24 * 60 * 60 * 1000)).getDate()}</td>
+                <td id="day3">${new Date(weekStart.getTime() + (2 * 24 * 60 * 60 * 1000)).getDate()}</td>
+                <td id="day4">${new Date(weekStart.getTime() + (3 * 24 * 60 * 60 * 1000)).getDate()}</td>
+                <td id="day5">${new Date(weekStart.getTime() + (4 * 24 * 60 * 60 * 1000)).getDate()}</td>
+            `;
+
+            const rowMorningShift = document.createElement('tr');
+            rowMorningShift.innerHTML = row1InnerHtmlMorning;
+
+            const rowAfternoonShift = document.createElement('tr');
+            rowAfternoonShift.innerHTML = row1InnerHtmlAfternoon;
+
+            // Append rows to the table body
+            tableBody.appendChild(rowDate);
+            tableBody.appendChild(rowMorningShift);
+            tableBody.appendChild(rowAfternoonShift);
+
+            // Highlight current date
+            highlightCurrentDate();
+            
+            // Display the week range
+            updateWeekRange();
+        }
+
+        function highlightCurrentDate() {
+            const currentDate12 = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
+            const dayIds = ["day1", "day2", "day3", "day4", "day5"];
+            
+            dayIds.forEach((dayId, index) => {
+                const dayElement = document.getElementById(dayId);
+                const dayElementDate = parseInt(dayElement.innerHTML, 10);
+                const dayElementFullDate = new Date(weekStart.getTime() + (index * 24 * 60 * 60 * 1000));
+                
+                if (dayElementDate === currentDate12.getDate() &&
+                    dayElementFullDate.getMonth() === currentDate12.getMonth() &&
+                    dayElementFullDate.getFullYear() === currentDate12.getFullYear()) {
+                    dayElement.classList.add('highlight');
+                } else {
+                    dayElement.classList.remove('highlight');
+                }
+            });
+        }
+
+        function updateWeekRange() {
+            const firstDayOfWeek = new Date(weekStart);
+            const lastDayOfWeek = new Date(weekStart);
+            lastDayOfWeek.setDate(weekStart.getDate() + 4); // עד חמישי
+            
+            const options = { day: 'numeric', month: 'numeric', year: 'numeric' };
+            const weekRangeElement = document.getElementById('week-range');
+            weekRangeElement.innerHTML = `
+                <i class="fas fa-calendar-week me-2"></i>
+                ${firstDayOfWeek.toLocaleDateString('he-IL', options)} - 
+                ${lastDayOfWeek.toLocaleDateString('he-IL', options)}
+            `;
+        }
+
+async function sendShiftData(selectElement, date, shiftType) {
+            const selectedValue = selectElement.value;
+            const jwt = localStorage.getItem('token');
+            console.log(jwt)
+            const data = {
+                date: date,
+                shiftType: shiftType,
+                location: selectedValue
+            };
+
+            try {
+                const response = await fetch(apiUrl + '/addshift', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwt}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const responseData = await response.json();
+                console.log('Success:', responseData);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function logout() {
+            fetch('http://127.0.0.1:5000/shifts/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Event listeners for previous and next week buttons
+        document.getElementById('previous-week-button').addEventListener('click', previousWeek);
+        document.getElementById('next-week-button').addEventListener('click', nextWeek);
+
+        function previousWeek() {
+            if (!buttonsEnabled) return;
+            disableButtons();
+            weekStart.setDate(weekStart.getDate() - 7);
+            displayCurrentWeek();
+            displayALllUsers();
+        }
+
+        function nextWeek() {
+            if (!buttonsEnabled) return;
+            disableButtons();
+            weekStart.setDate(weekStart.getDate() + 7);
+            displayCurrentWeek();
+            displayALllUsers();
+        }
+
+        function disableButtons() {
+            buttonsEnabled = false;
+            document.getElementById('previous-week-button').disabled = true;
+            document.getElementById('next-week-button').disabled = true;
+            
+            setTimeout(function() {
+                buttonsEnabled = true;
+                document.getElementById('previous-week-button').disabled = false;
+                document.getElementById('next-week-button').disabled = false;
+            }, 500);
+        }
+         function logout() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+        // Initialize the calendar when the page loads
+        window.onload = function() {
+            displayCurrentWeek();
+            displayALllUsers();
+        };
+    </script>
+</body>
+</html>

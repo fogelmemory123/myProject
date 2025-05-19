@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>פאנל אדמין - ניהול משתמשים ואירועים</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    .edit-icon {
+      cursor: pointer;
+      font-size: 17px;
+      margin-left: 5px;
+      color: red;
+    }
+
+    .edit-icon:hover {
+      color: red;
+    }
+    
+    :root {
+      --primary-color: #4361ee;
+      --secondary-color: #3f37c9;
+      --accent-color: #4895ef;
+      --light-color: #f8f9fa;
+      --dark-color: #212529;
+      --success-color: #4cc9f0;
+      --danger-color: #f72585;
+      --warning-color: #f8961e;
+      --border-radius: 12px;
+      --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      color: var(--dark-color);
+      direction: rtl;
+      padding-top: 70px;
+      min-height: 100vh;
+    }
+    
+    .navbar {
+      box-shadow: var(--box-shadow);
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+    }
+    
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 1.5rem;
+    }
+    
+    #userInfo {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+    
+    .container-section {
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      padding: 25px;
+      margin-bottom: 30px;
+      transition: var(--transition);
+    }
+    
+    .container-section:hover {
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    h1, h2 {
+      color: var(--primary-color);
+      font-weight: 700;
+      margin-bottom: 25px;
+      text-align: center;
+      position: relative;
+      padding-bottom: 10px;
+    }
+    
+    h1::after, h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 80px;
+      height: 3px;
+      background: linear-gradient(to right, var(--accent-color), var(--success-color));
+      border-radius: 3px;
+    }
+    
+    .form-control, .form-select {
+      border: 1px solid #e0e0e0;
+      border-radius: var(--border-radius);
+      padding: 12px 15px;
+      margin-bottom: 15px;
+      transition: var(--transition);
+      background-color: #f8f9fa;
+      direction: rtl;
+      text-align: right;
+    }
+    
+    .form-control:focus, .form-select:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+      background-color: white;
+    }
+    
+    select.form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: left 0.75rem center;
+      background-size: 16px 12px;
+      padding-right: 15px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 12px 25px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      transition: var(--transition);
+      width: 100%;
+      margin-top: 10px;
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #4cc9f0, #4895ef);
+      border: none;
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, #f72585, #b5179e);
+      border: none;
+    }
+    
+    .table {
+      border-radius: var(--border-radius);
+      overflow: hidden;
+    }
+    
+    .table thead th {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      font-weight: 600;
+      border: none;
+      padding: 15px;
+      text-align: center;
+    }
+    
+    .table tbody td {
+      vertical-align: middle;
+      padding: 12px 15px;
+      border-color: #f1f1f1;
+    }
+    
+    .table tbody tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+    
+    .table tbody tr:hover {
+      background-color: rgba(67, 97, 238, 0.05);
+    }
+    
+    .filters-container {
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    .form-label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--dark-color);
+    }
+    
+    .participants-list {
+      max-height: 150px;
+      overflow-y: auto;
+      padding: 5px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .participants-list ul {
+      padding-right: 15px;
+      margin-bottom: 0;
+    }
+    
+    .participants-list li {
+      margin-bottom: 5px;
+      padding: 5px 10px;
+      background: white;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* אנימציות */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .container-section {
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    /* התאמות למובייל */
+    @media (max-width: 768px) {
+      body {
+        padding-top: 60px;
+        font-size: 14px;
+      }
+      
+      .container-section {
+        padding: 15px;
+      }
+      
+      h1 {
+        font-size: 1.5rem;
+      }
+      
+      h2 {
+        font-size: 1.3rem;
+      }
+      
+      .table thead th, .table tbody td {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+      }
+      
+      .btn {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+      }
+    }
+    
+    /* סגנון מיוחד לתאריך */
+    input[type="date"], input[type="datetime-local"] {
+      position: relative;
+    }
+    
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.7;
+      cursor: pointer;
+    }
+    
+    /* סגנון לכפתורים בטבלה */
+    .table .btn-sm {
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      border-radius: 8px;
+      min-width: 70px;
+    }
+    
+    /* הודעות */
+    .alert-message {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      max-width: 350px;
+      display: none;
+    }
+    
+    /* Modal adjustments for RTL */
+    .modal-header .btn-close {
+      margin: -0.5rem auto -0.5rem -0.5rem;
+    }
+    /* הוספתי מדיה קוורי נוספת לטלפונים קטנים */
+@media (max-width: 576px) {
+  body {
+    padding-top: 56px;
+    font-size: 13px;
+  }
+  
+  .container-section {
+    padding: 10px;
+    margin-bottom: 15px;
+  }
+  
+  h1 {
+    font-size: 1.3rem;
+  }
+  
+  h2 {
+    font-size: 1.2rem;
+  }
+  
+  .table thead th, .table tbody td {
+    padding: 6px 8px;
+    font-size: 0.8rem;
+  }
+  
+  .btn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+  
+  /* התאמות לטבלאות */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* התאמות לטופס */
+  .form-control, .form-select {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+  
+  /* התאמות למודל */
+  .modal-dialog {
+    margin: 0.5rem auto;
+    max-width: 95%;
+  }
+  
+  /* הסתרת עמודות לא קריטיות בטבלאות */
+  #usersTable th:nth-child(6), 
+  #usersTable td:nth-child(6),
+  #usersTable th:nth-child(1),
+  #usersTable td:nth-child(1) {
+    display: none;
+  }
+  
+  #eventsTable th:nth-child(3),
+  #eventsTable td:nth-child(3) {
+    display: none;
+  }
+}
+
+/* התאמות לטבלאות בטלפונים */
+@media (max-width: 768px) {
+  /* טבלת משתמשים */
+  #usersTable {
+    display: block;
+    width: 100%;
+  }
+  
+  #usersTable thead {
+    display: none;
+  }
+  
+  #usersTable tbody, #usersTable tr, #usersTable td {
+    display: block;
+    width: 100%;
+  }
+  
+  #usersTable tr {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+  }
+  
+  #usersTable td {
+    text-align: right;
+    padding: 8px 10px;
+    position: relative;
+    border: none;
+    border-bottom: 1px solid #eee;
+  }
+  
+  #usersTable td:before {
+    content: attr(data-label);
+    position: absolute;
+    left: 10px;
+    top: 8px;
+    font-weight: bold;
+    color: var(--primary-color);
+  }
+  
+  #usersTable td:last-child {
+    border-bottom: none;
+  }
+  
+  /* טבלת אירועים */
+  #eventsTable {
+    display: block;
+    width: 100%;
+  }
+  
+  #eventsTable thead {
+    display: none;
+  }
+  
+  #eventsTable tbody, #eventsTable tr, #eventsTable td {
+    display: block;
+    width: 100%;
+  }
+  
+  #eventsTable tr {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+  }
+  
+  #eventsTable td {
+    text-align: right;
+    padding: 8px 10px;
+    position: relative;
+    border: none;
+    border-bottom: 1px solid #eee;
+  }
+  
+  #eventsTable td:before {
+    content: attr(data-label);
+    position: absolute;
+    left: 10px;
+    top: 8px;
+    font-weight: bold;
+    color: var(--primary-color);
+  }
+  
+  #eventsTable td:last-child {
+    border-bottom: none;
+  }
+  
+  .participants-list {
+    max-height: 100px;
+  }
+}
+
+/* הוספתי את זה ל-JavaScript שיטפל בתצוגה הניידת */
+
+
+// צריך לקרוא לפונקציה הזו כשהדף נטען וכשהחלון משנה גודל
+
+
+  </style>
+</head>
+<body>
+  <!-- הודעות -->
+  <div id="alertMessage" class="alert-message">
+    <div id="alertText"></div>
+  </div>
+
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+      <div>
+        <a class="navbar-brand" href="#">
+          <i class="fas fa-user-shield me-2"></i>פאנל ניהול
+        </a>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <a href="index.html" class="btn btn-light btn-sm" title="לדף הבית">
+          <i class="fas fa-home"></i>
+        </a>
+        <span id="userInfo" class="navbar-text"></span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <!-- סקציית הוספת אירוע -->
+    <div class="container-section">
+      <h1><i class="fas fa-calendar-plus me-2"></i>הוספת אירוע חדש</h1>
+      <div class="row">
+        <div class="col-md-6">
+          <label for="event_date" class="form-label">תאריך ושעה של האירוע</label>
+          <input type="datetime-local" id="event_date" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label for="event_branch_id" class="form-label">סניף</label>
+          <select id="event_branch_id" class="form-select" required>
+            <option value="">בחר סניף</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-8">
+          <label for="event_description" class="form-label">תיאור האירוע</label>
+          <input type="text" id="event_description" class="form-control" placeholder="הזן תיאור מפורט" required>
+        </div>
+        <div class="col-md-4">
+          <label for="lecturer_name" class="form-label">שם המרצה</label>
+          <input type="text" id="lecturer_name" class="form-control" placeholder="לא חובה">
+        </div>
+      </div>
+      <button class="btn btn-primary mt-3" onclick="addEvent()">
+        <i class="fas fa-plus-circle me-2"></i>הוסף אירוע
+      </button>
+    </div>
+    
+    <!-- סקציית הוספת משתמש -->
+    <div class="container-section">
+      <h1><i class="fas fa-user-plus me-2"></i>הוספת משתמש חדש</h1>
+      <div class="row">
+        <div class="col-md-6">
+          <label for="first_name" class="form-label">שם פרטי</label>
+          <input type="text" id="first_name" class="form-control" placeholder="הזן שם פרטי" required>
+        </div>
+        <div class="col-md-6">
+          <label for="last_name" class="form-label">שם משפחה</label>
+          <input type="text" id="last_name" class="form-control" placeholder="הזן שם משפחה" required>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <label for="email" class="form-label">אימייל</label>
+          <input type="email" id="email" class="form-control" placeholder="הזן כתובת אימייל" required>
+        </div>
+        <div class="col-md-6">
+          <label for="password" class="form-label">סיסמה</label>
+          <input type="password" id="password" class="form-control" placeholder="הזן סיסמה" required>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4">
+          <label for="birth_date" class="form-label">תאריך לידה</label>
+          <input type="date" id="birth_date" class="form-control">
+        </div>
+        <div class="col-md-4">
+          <label for="branch_id" class="form-label">סניף</label>
+          <select id="branch_id" class="form-select" required>
+            <option value="">בחר סניף</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="role" class="form-label">תפקיד</label>
+          <select id="role" class="form-select" required>
+            <option value="">בחר תפקיד</option>
+            <option value="מקבל שירות">מקבל שירות</option>
+            <option value="מנהל סניף">מנהל סניף</option>
+            <option value="אדמין">אדמין</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary mt-3" onclick="addUser()">
+        <i class="fas fa-user-edit me-2"></i>הוסף משתמש
+      </button>
+    </div>
+    
+    <!-- פילטרים למשמרות -->
+    <div class="filters-container">
+      <div class="row g-3 align-items-center justify-content-center">
+        <div class="col-md-3 col-sm-6">
+          <label for="locationFilter" class="form-label">מיקום</label>
+          <select id="locationFilter" class="form-select" onchange="loadShifts()">
+            <option value="all">הכול</option>
+            <option value="בית">בית</option>
+            <option value="סטודיו">סטודיו</option>
+          </select>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <label for="shiftTypeFilter" class="form-label">סוג משמרת</label>
+          <select id="shiftTypeFilter" class="form-select" onchange="loadShifts()">
+            <option value="all">כל המשמרות</option>
+            <option value="בוקר">בוקר</option>
+            <option value="צהריים">צהריים</option>
+          </select>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <label for="monthFilter" class="form-label">חודש</label>
+          <select id="monthFilter" class="form-select" onchange="loadShifts()">
+            <option value="all">כל החודשים</option>
+            <option value="1">ינואר</option>
+            <option value="2">פברואר</option>
+            <option value="3">מרץ</option>
+            <option value="4">אפריל</option>
+            <option value="5">מאי</option>
+            <option value="6">יוני</option>
+            <option value="7">יולי</option>
+            <option value="8">אוגוסט</option>
+            <option value="9">ספטמבר</option>
+            <option value="10">אוקטובר</option>
+            <option value="11">נובמבר</option>
+            <option value="12">דצמבר</option>
+          </select>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <label for="userFilter" class="form-label">משתמש</label>
+          <select id="userFilter" class="form-select" onchange="loadShifts()">
+            <option value="">כל המשתמשים</option>
+          </select>
+        </div>
+        <div class="col-md-3 col-sm-6 d-flex align-items-end">
+          <button class="btn btn-success w-100" onclick="exportToExcel()">
+            <i class="fas fa-file-excel me-2"></i>ייצוא לאקסל
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- טבלת משמרות -->
+    <div class="container-section">
+      <h2><i class="fas fa-calendar-alt me-2"></i>משמרות קיימות</h2>
+      <div class="table-responsive">
+        <table class="table table-hover" id="shiftsTable">
+          <thead>
+            <tr>
+              <th>שם משתמש</th>
+              <th>תאריך</th>
+              <th>משמרת</th>
+              <th>מיקום</th>
+              <th>סניף</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="totalShiftsCount" class="mt-3 text-center fw-bold text-primary fs-5">
+      סך המשמרות: 0
+    </div>
+
+    <br><br>
+ 
+    <div class="table-container">
+      <h2 class="text-center">רשימת משתמשים</h2>
+      <table class="table table-bordered table-striped" id="usersTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>שם פרטי</th>
+            <th>שם משפחה</th>
+            <th>אימייל</th>
+            <th>סניף</th>
+            <th>תאריך לידה</th>
+            <th>תפקיד</th>
+            <th>פעולות</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Modal for editing users -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editUserModalLabel">ערוך משתמש</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="סגור"></button>
+          </div>
+          <div class="modal-body">
+            <form id="editUserForm">
+              <input type="hidden" id="edit_id" name="id">
+              <div class="mb-3">
+                <label for="edit_first_name" class="form-label">שם פרטי</label>
+                <input type="text" id="edit_first_name" name="first_name" class="form-control" placeholder="שם פרטי">
+              </div>
+              <div class="mb-3">
+                <label for="edit_last_name" class="form-label">שם משפחה</label>
+                <input type="text" id="edit_last_name" name="last_name" class="form-control" placeholder="שם משפחה">
+              </div>
+              <div class="mb-3">
+                <label for="edit_email" class="form-label">אימייל</label>
+                <input type="email" id="edit_email" name="email" class="form-control" placeholder="אימייל">
+              </div>
+              <div class="mb-3">
+                <label for="edit_branch_id" class="form-label">סניף</label>
+                <select id="edit_branch_id" name="branch_id" class="form-select">
+                  <option value="">בחר סניף</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="edit_birth_date" class="form-label">תאריך לידה</label>
+                <input type="date" id="edit_birth_date" name="birth_date" class="form-control">
+              </div>
+           
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">בטל</button>
+            <button type="button" class="btn btn-primary" id="saveChangesButton">שמור שינויים</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<div class="container-section">
+      <h2><i class="fas fa-calendar-check me-2"></i>אירועים עם משתתפים</h2>
+      <div class="table-responsive">
+        <table class="table table-hover" id="eventsTable">
+          <thead>
+            <tr>
+              <th>תאריך</th>
+              <th>תיאור</th>
+              <th>מרצה</th>
+              <th>סניף</th>
+              <th>משתתפים</th>
+              <th>פעולות</th>
+            </tr>
+          </thead>
+          <tbody id="eventsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Initialize the page
+    getUserDetails().then(() => {
+      loadShifts();
+      loadAllUsers();
+      loadUserFilterOptions();
+      loadEventsWithParticipants()
+    });
+    
+    // Set up event listener for save changes button
+    document.getElementById('saveChangesButton').addEventListener('click', saveUserChanges);
+  });
+
+  const apiUrl = "https://flask-backend-tjoh.onrender.com/admin";
+  let currentUser = null;
+  let allUsers = [];
+
+  function showAlert(message, type = 'success') {
+    const alert = document.getElementById('alertMessage');
+    const alertText = document.getElementById('alertText');
+    
+    alert.className = `alert alert-${type} show`;
+    alertText.textContent = message;
+    alert.style.display = 'block';
+    
+    setTimeout(hideAlert, 5000);
+  }
+
+  function hideAlert() {
+    const alert = document.getElementById('alertMessage');
+    alert.style.display = 'none';
+  }
+
+  function exportToExcel() {
+    const table = document.getElementById("shiftsTable");
+    const wb = XLSX.utils.table_to_book(table, { sheet: "משמרות" });
+    XLSX.writeFile(wb, "shifts_report.xlsx");
+    showAlert('הדוח נוצר והורד בהצלחה!');
+  }
+
+  async function loadShifts() {
+    const locationFilter = document.getElementById("locationFilter")?.value || "all";
+    const shiftTypeFilter = document.getElementById("shiftTypeFilter")?.value || "all";
+    const monthFilter = document.getElementById("monthFilter")?.value || "all";
+    const userFilter = document.getElementById("userFilter")?.value || "";
+
+    const token = localStorage.getItem("token");
+    const tableBody = document.querySelector("#shiftsTable tbody");
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="5" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">טוען...</span>
+          </div>
+        </td>
+      </tr>
+    `;
+
+    try {
+      const res = await fetch(`${apiUrl}/allshifts`, {
+        method: "GET",
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error("שגיאה בתשובת השרת");
+      }
+
+      const data = await res.json();
+      tableBody.innerHTML = "";
+
+      const filteredShifts = data.data.filter(shift => {
+        const [year, month, day] = shift.date.split('-');
+        const shiftMonth = parseInt(month);
+
+        const matchesLocation = locationFilter === "all" || shift.location === locationFilter;
+        const matchesType = shiftTypeFilter === "all" || shift.shiftType === shiftTypeFilter;
+        const matchesMonth = monthFilter === "all" || shiftMonth === parseInt(monthFilter);
+        const matchesUser = userFilter === "" || shift.user_id.toString()=== userFilter;
+        console.log(shift.user_id)
+        console.log(userFilter)
+
+        return matchesLocation && matchesType && matchesMonth && matchesUser;
+      });
+
+      if (filteredShifts.length === 0) {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td colspan="5" class="text-center py-4">לא נמצאו משמרות תואמות</td>`;
+        tableBody.appendChild(row);
+        document.getElementById("totalShiftsCount").textContent = `סה״כ משמרות תואמות: 0`;
+        return;
+      }
+
+      filteredShifts.forEach(shift => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${shift.user}</td>
+          <td>${shift.date}</td>
+          <td>
+            <span class="badge ${shift.shiftType === 'בוקר' ? 'bg-primary' : 'bg-warning text-dark'}">
+              ${shift.shiftType === "morning" ? "בוקר" : shift.shiftType === "afternoon" ? "צהריים" : shift.shiftType}
+            </span>
+          </td>
+          <td>${shift.location}</td>
+          <td>${shift.branch}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+
+      document.getElementById("totalShiftsCount").textContent = `סה״כ משמרות תואמות: ${filteredShifts.length}`;
+    } catch (err) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="5" class="text-center text-danger py-4">
+            שגיאה בטעינת המשמרות
+          </td>
+        </tr>
+      `;
+      console.error("שגיאה בטעינת משמרות:", err);
+      showAlert("שגיאה בטעינת המשמרות", 'danger');
+    }
+  }
+
+  async function getUserDetails() {
+    try {
+      const res = await fetch(`${apiUrl}/getadmin`, {
+        method: "GET",
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
+        }
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        currentUser = data;
+        document.getElementById("userInfo").innerHTML =
+          `<i class="fas fa-user-circle me-1"></i> ${data.name} | <i class="fas fa-building me-1"></i> ${data.branch_name || "ללא"} | <i class="fas fa-user-tag me-1"></i> ${data.role}`;
+
+        const branchSelect = document.getElementById("branch_id");
+        const eventBranchSelect = document.getElementById("event_branch_id");
+        const roleSelect = document.getElementById("role");
+
+        if (data.role === "אדמין") {
+          const branchesRes = await fetch(`${apiUrl}/branches`, {
+            headers: {
+              'Authorization': 'Bearer ' + localStorage.getItem('token')
+            }
+          });
+          
+          if (branchesRes.ok) {
+            const branchesData = await branchesRes.json();
+            branchSelect.innerHTML = '<option value="">בחר סניף</option>';
+            eventBranchSelect.innerHTML = '<option value="">בחר סניף</option>';
+            
+            branchesData.branches.forEach(branch => {
+              const option = document.createElement("option");
+              option.value = branch.id;
+              option.text = branch.name;
+              branchSelect.appendChild(option.cloneNode(true));
+              eventBranchSelect.appendChild(option);
+            });
+          }
+        } else if (data.role === "מנהל סניף") {
+          branchSelect.innerHTML = "";
+          const option = document.createElement("option");
+          option.value = data.branch_id;
+          option.text = data.branch_name;
+          option.selected = true;
+          branchSelect.appendChild(option);
+          branchSelect.setAttribute("disabled", true);
+
+          // הוספת הסניף הנוכחי גם לבחירת אירועים
+          eventBranchSelect.innerHTML = "";
+          eventBranchSelect.appendChild(option.cloneNode(true));
+          eventBranchSelect.setAttribute("disabled", true);
+
+          // מניעת יצירת משתמש אדמין
+          const adminOption = Array.from(roleSelect.options).find(opt => opt.value === "אדמין");
+          if (adminOption) {
+            roleSelect.removeChild(adminOption);
+          }
+        }
+      } else {
+        showAlert("נכשל להביא פרטי משתמש.", 'danger');
+      }
+    } catch (e) {
+      console.error("שגיאה בקבלת נתוני משתמש", e);
+      showAlert("שגיאה בקבלת נתוני משתמש", 'danger');
+    }
+  }
+
+  async function addUser() {
+    const token = localStorage.getItem("token");
+    if (!token) return showAlert("אין טוקן - יש להתחבר מחדש", 'danger');
+
+    // ולידציה של השדות
+    const firstName = document.getElementById("first_name").value.trim();
+    const lastName = document.getElementById("last_name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const branchId = document.getElementById("branch_id").value;
+    const role = document.getElementById("role").value;
+
+    if (!firstName || !lastName || !email || !password || !branchId || !role) {
+      return showAlert("יש למלא את כל השדות המסומנים", 'warning');
+    }
+
+    // ולידציה של אימייל
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return showAlert("אנא הזן כתובת אימייל תקינה", 'warning');
+    }
+
+    const data = {
+      first_name: firstName,
+      last_name: lastName,
+      email: email,
+      password: password,
+      birth_date: document.getElementById("birth_date").value,
+      branch_id: parseInt(branchId),
+      role: role
+    };
+
+    try {
+      const res = await fetch(`${apiUrl}/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        showAlert("המשתמש נוסף בהצלחה!");
+        // איפוס הטופס
+        document.getElementById("first_name").value = '';
+        document.getElementById("last_name").value = '';
+        document.getElementById("email").value = '';
+        document.getElementById("password").value = '';
+        document.getElementById("birth_date").value = '';
+        // רענון רשימת המשתמשים
+        loadAllUsers();
+      } else {
+        showAlert("שגיאה: " + (result.message || "שגיאה לא ידועה"), 'danger');
+      }
+    } catch (error) {
+      console.error("שגיאה:", error);
+      showAlert("שגיאה כללית. נסה שוב.", 'danger');
+    }
+  }
+
+  async function addEvent() {
+    const token = localStorage.getItem("token");
+    if (!token) return showAlert("אין טוקן - יש להתחבר מחדש", 'danger');
+
+    const eventDate = document.getElementById("event_date").value;
+    const eventDescription = document.getElementById("event_description").value.trim();
+    const branchId = document.getElementById("event_branch_id").value;
+
+    if (!eventDate || !eventDescription || !branchId) {
+      return showAlert("יש למלא את כל השדות המסומנים", 'warning');
+    }
+
+    const data = {
+      date: eventDate,
+      event_description: eventDescription,
+      lecturer_name: document.getElementById("lecturer_name").value.trim(),
+      branch_id: parseInt(branchId)
+    };
+
+    try {
+      const res = await fetch(`https://flask-backend-tjoh.onrender.com/calendar/event`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        showAlert("האירוע נוסף בהצלחה!");
+        // איפוס הטופס
+        document.getElementById("event_date").value = "";
+        document.getElementById("event_description").value = "";
+        document.getElementById("lecturer_name").value = "";
+      } else {
+        showAlert("שגיאה: " + (result.message || "שגיאה לא ידועה"), 'danger');
+      }
+    } catch (error) {
+      console.error("שגיאה בהוספת אירוע:", error);
+      showAlert("שגיאה כללית. נסה שוב.", 'danger');
+    }
+  }
+
+  async function loadUserFilterOptions() {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const select = document.getElementById("userFilter");
+    if (!select) return;
+
+    try {
+      const res = await fetch(`${apiUrl}/allusers`, {
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
+      });
+
+      const data = await res.json();
+
+      select.innerHTML = `<option value="">כל המשתמשים</option>`;
+      data.users.forEach(user => {
+        const option = document.createElement("option");
+        option.value = user.id;
+        option.textContent = `${user.first_name} ${user.last_name}`;
+        select.appendChild(option);
+      });
+
+    } catch (err) {
+      console.error("שגיאה בטעינת המשתמשים לפילטר:", err);
+      showAlert("שגיאה בטעינת המשתמשים לפילטר", 'danger');
+    }
+  }
+
+  async function loadAllUsers() {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`${apiUrl}/allusers`, {
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error('שגיאה בטעינת משתמשים');
+      }
+
+      const data = await res.json();
+      allUsers = data.users || [];
+      renderUserTable(allUsers);
+      
+      // Update the user filter dropdown as well
+      const userFilter = document.getElementById("userFilter");
+      userFilter.innerHTML = '<option value="">כל המשתמשים</option>';
+      allUsers.forEach(user => {
+        const option = document.createElement("option");
+        option.value = user.id;
+        option.textContent = `${user.first_name} ${user.last_name}`;
+        userFilter.appendChild(option);
+      });
+
+    } catch (error) {
+      console.error('שגיאה בטעינת משתמשים:', error);
+      showAlert('שגיאה בטעינת משתמשים', 'danger');
+    }
+  }
+
+  function renderUserTable(users) {
+    const tableBody = document.getElementById("usersTableBody");
+    tableBody.innerHTML = "";
+
+    if (!users || users.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">לא נמצאו משתמשים</td></tr>';
+      return;
+    }
+
+    users.forEach(user => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${user.id}</td>
+        <td>${user.first_name}</td>
+        <td>${user.last_name}</td>
+        <td>${user.email}</td>
+        <td>${user.branch || ''}</td>
+        <td>${user.birth_date || ''}</td>
+        <td>${user.role || ''}</td>
+        <td class="text-center">
+          <button class="btn btn-sm btn-primary" onclick="openEditModal(${JSON.stringify(user).replace(/"/g, '&quot;')})">
+            <i class="fas fa-edit"></i> ערוך
+          </button>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
+
+  function openEditModal(user) {
+    // Populate the modal with user data
+    document.getElementById('edit_id').value = user.id;
+    document.getElementById('edit_first_name').value = user.first_name;
+    document.getElementById('edit_last_name').value = user.last_name;
+    document.getElementById('edit_email').value = user.email;
+    document.getElementById('edit_birth_date').value = user.birth_date || '';
+    
+    // Handle branch select
+    const branchSelect = document.getElementById('edit_branch_id');
+    branchSelect.innerHTML = document.getElementById('branch_id').innerHTML;
+    if (user.branch_id) {
+      branchSelect.value = user.branch_id;
+    }
+    
+    // Handle role
+    // document.getElementById('edit_role').value = user.role || '';
+    
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+    modal.show();
+  }
+
+async function saveUserChanges() {
+    const token = localStorage.getItem('token');
+    if (!token) return showAlert('אין טוקן - יש להתחבר מחדש', 'danger');
+
+    const userId = document.getElementById('edit_id').value;
+    const data = {
+      first_name: document.getElementById('edit_first_name').value,
+      last_name: document.getElementById('edit_last_name').value,
+      email: document.getElementById('edit_email').value,
+      // Use Number() instead of parseInt for more flexible conversion
+      branch_id: Number(document.getElementById('edit_branch_id').value),
+      // Handle birth date conversion carefully
+      birth_date: document.getElementById('edit_birth_date').value || null,
+      // Ensure role is converted to string if needed
+    //   role: String(document.getElementById('edit_role').value)
+    };
+
+    // Additional validation
+    const validationErrors = [];
+    
+    if (!data.first_name) validationErrors.push('שם פרטי הוא שדה חובה');
+    if (!data.last_name) validationErrors.push('שם משפחה הוא שדה חובה');
+    if (!data.email) validationErrors.push('אימייל הוא שדה חובה');
+    if (!data.branch_id) validationErrors.push('סניף הוא שדה חובה');
+    // if (!data.role) validationErrors.push('תפקיד הוא שדה חובה');
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (data.email && !emailRegex.test(data.email)) {
+        validationErrors.push('פורמט אימייל לא תקין');
+    }
+
+    // If there are validation errors, show them and return
+    if (validationErrors.length > 0) {
+        showAlert(validationErrors.join(', '), 'warning');
+        return;
+    }
+
+    try {
+      const res = await fetch(`${apiUrl}/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify(data)
+      });
+
+      // Parse the response
+      const result = await res.json();
+
+      // Check if the request was successful
+      if (res.ok) {
+        showAlert('המשתמש עודכן בהצלחה!');
+        // Hide the modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
+        modal.hide();
+        // Refresh the users table
+        await loadAllUsers();
+      } else {
+        // Show error message from the server
+        showAlert(`שגיאה: ${result.message || 'שגיאה לא ידועה'}`, 'danger');
+      }
+    } catch (error) {
+      console.error('שגיאה:', error);
+      showAlert('שגיאה כללית. נסה שוב.', 'danger');
+    }
+    
+}
+
+  async function loadEventsWithParticipants() {
+    const token = localStorage.getItem("token");
+    const tbody = document.getElementById("eventsTableBody");
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">טוען...</span></div></td></tr>';
+
+    try {
+      const res = await fetch("https://flask-backend-tjoh.onrender.com/admin/events_with_participants", {
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
+      });
+
+      if (!res.ok) throw new Error("שגיאה בשליפת אירועים");
+      const data = await res.json();
+      tbody.innerHTML = "";
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4">לא נמצאו אירועים</td></tr>';
+        return;
+      }
+
+      data.forEach(event => {
+        const row = document.createElement("tr");
+        const participantsList = event.participants.length > 0 ?
+          `<div class="participants-list"><ul>${event.participants.map(p => `<li>${p.name}</li>`).join('')}</ul></div>` : 
+          '<span class="text-muted">אין משתתפים</span>';
+
+        row.innerHTML = `
+          <td>${new Date(event.date).toLocaleString('he-IL')}</td>
+          <td>${event.event_description}</td>
+          <td>${event.lecturer_name || '<span class="text-muted">ללא מרצה</span>'}</td>
+          <td>${event.branch_city}</td>
+          <td>${participantsList}</td>
+          <td class="text-center">
+            <button class="btn btn-danger btn-sm" onclick="deleteEvent('${event.id}')">
+              <i class="fas fa-trash-alt"></i> מחק
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">שגיאה בטעינת האירועים</td></tr>';
+      console.error("שגיאה בטעינת אירועים עם משתתפים:", err);
+      showAlert("שגיאה בטעינת האירועים", 'danger');
+    }
+  }
+  // הוספת פונקציית המחיקה
+async function deleteEvent(eventId) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return showAlert("אין טוקן — יש להתחבר מחדש", 'danger');
+  }
+
+  if (!confirm("האם אתה בטוח שברצונך למחוק את האירוע?")) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${apiUrl}/calendar/event/${eventId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    });
+
+    const result = await res.json();
+    if (res.ok) {
+      showAlert("האירוע נמחק בהצלחה!");
+      // טען מחדש את רשימת האירועים המעודכנת
+      loadEventsWithParticipants();
+    } else {
+      showAlert("שגיאה: " + (result.message || "שגיאה לא ידועה"), 'danger');
+    }
+  } catch (err) {
+    console.error("שגיאה במחיקת אירוע:", err);
+    showAlert("שגיאה כללית. נסה שוב.", 'danger');
+  }
+}
+
+</script>
+</body>
+</html>
