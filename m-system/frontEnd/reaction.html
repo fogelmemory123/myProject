@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <title>משחק זמן תגובה משופר</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .game-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 40px 30px;
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+        }
+        
+        h1 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 2.5rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 5;
+        }
+        
+        p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #555;
+            position: relative;
+            z-index: 5;
+        }
+        
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 5;
+        }
+        
+        .stat-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px;
+            min-width: 180px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #777;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .game-area {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            margin: 20px 0;
+            border-radius: 10px;
+            background-color: rgba(240, 240, 240, 0.5);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        #box {
+            width: 100px;
+            height: 100px;
+            background-color: #3498db;
+            position: absolute;
+            display: none;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease, background-color 0.3s ease;
+            z-index: 2;
+        }
+        
+        #box:hover {
+            transform: scale(1.05);
+        }
+        
+        .circle {
+            border-radius: 50%;
+        }
+        
+        .buttons-container {
+            margin-top: 20px;
+            position: relative;
+            z-index: 5;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        #resetBtn {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+        
+        @keyframes targetAppear {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .target-appear {
+            animation: targetAppear 0.3s ease;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .stat-box {
+                min-width: 140px;
+                padding: 10px;
+            }
+            
+            .stat-value {
+                font-size: 1.3rem;
+            }
+            
+            button {
+                padding: 10px 20px;
+            }
+            
+            .game-area {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-container">
+        <h1>בדוק את זמן התגובה שלך!</h1>
+        <p>לחץ על התיבות והמעגלים במהירות שאתה יכול. זמן התגובה שלך יוצג מטה:</p>
+        
+        <div class="stats-container">
+            <div class="stat-box">
+                <div class="stat-label">זמן תגובה נוכחי</div>
+                <div id="currentReactionTime" class="stat-value">0.000 שניות</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">זמן ממוצע</div>
+                <div id="averageReactionTime" class="stat-value">0.000 שניות</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">ניסיונות שנותרו</div>
+                <div id="attemptsLeft" class="stat-value">5</div>
+            </div>
+        </div>
+        <div class="game-area" id="gameArea">
+            <div id="box"></div>
+        </div>
+        
+        <div class="buttons-container">
+            <button id="startBtn">התחל משחק</button>
+            <button id="resetBtn">איפוס</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Game elements
+            const box = document.getElementById("box");
+            const startBtn = document.getElementById("startBtn");
+            const resetBtn = document.getElementById("resetBtn");
+            const currentReactionTime = document.getElementById("currentReactionTime");
+            const averageReactionTime = document.getElementById("averageReactionTime");
+            const attemptsLeft = document.getElementById("attemptsLeft");
+            
+            // Game variables
+            let clickedTime;
+            let createdTime;
+            let reactionTime;
+            let reactionTimes = [];
+            let totalAttempts = 5;
+            let currentAttempt = 0;
+            let isPlaying = false;
+            let timerTimeout;
+            
+            // Set initial attempts
+            attemptsLeft.textContent = totalAttempts;
+            
+            // Event listeners
+            startBtn.addEventListener("click", startGame);
+            resetBtn.addEventListener("click", resetGame);
+            box.addEventListener("click", boxClicked);
+            
+            // Get random color for the box
+            function getRandomColor() {
+                const colors = [
+                    "#3498db", "#2ecc71", "#e74c3c", "#f39c12", 
+                    "#9b59b6", "#1abc9c", "#d35400", "#c0392b",
+                    "#27ae60", "#2980b9", "#8e44ad", "#16a085"
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            // Start the game
+            function startGame() {
+                if (isPlaying) return;
+                
+                isPlaying = true;
+                currentAttempt = 0;
+                reactionTimes = [];
+                
+                startBtn.disabled = true;
+                resetBtn.disabled = false;
+                
+                // Update attempts display
+                attemptsLeft.textContent = totalAttempts;
+                
+                makeBox();
+            }
+            
+            // Create a new box
+            function makeBox() {
+                if (!isPlaying) return;
+                
+                // Hide box
+                box.style.display = "none";
+                
+                // Random delay (between 1-3 seconds)
+                const delay = Math.random() * 2000 + 1000;
+                
+                timerTimeout = setTimeout(function() {
+                    // Get game area dimensions
+                    const gameArea = document.getElementById("gameArea");
+                    const gameAreaRect = gameArea.getBoundingClientRect();
+                    
+                    // Random size between 60px and 120px
+                    const boxSize = Math.random() * 60 + 60;
+                    
+                    // Calculate max positions to keep box within game area
+                    const maxTop = gameAreaRect.height - boxSize;
+                    const maxLeft = gameAreaRect.width - boxSize;
+                    
+                    // Random position within game area
+                    const top = Math.random() * maxTop;
+                    const left = Math.random() * maxLeft;
+                    
+                    // Random shape (circle or square)
+                    if (Math.random() > 0.5) {
+                        box.classList.add("circle");
+                    } else {
+                        box.classList.remove("circle");
+                    }
+                    
+                    // Set box properties
+                    box.style.width = boxSize + "px";
+                    box.style.height = boxSize + "px";
+                    box.style.top = top + "px";
+                    box.style.left = left + "px";
+                    box.style.backgroundColor = getRandomColor();
+                    
+                    // Add animation class
+                    box.classList.add("target-appear");
+                    
+                    // Show the box
+                    box.style.display = "block";
+                    
+                    // Record created time
+                    createdTime = Date.now();
+                    
+                    // Remove animation class after animation completes
+                    setTimeout(() => {
+                        box.classList.remove("target-appear");
+                    }, 300);
+                }, delay);
+            }
+            
+            // Box clicked
+            function boxClicked() {
+                clickedTime = Date.now();
+                reactionTime = (clickedTime - createdTime) / 1000;
+                
+                // Record this time
+                reactionTimes.push(reactionTime);
+                
+                // Calculate average time
+                const averageTime = reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length;
+                
+                // Update displays
+                currentReactionTime.textContent = reactionTime.toFixed(3) + " שניות";
+                averageReactionTime.textContent = averageTime.toFixed(3) + " שניות";
+                
+                // Update current attempt
+                currentAttempt++;
+                attemptsLeft.textContent = totalAttempts - currentAttempt;
+                
+                // Hide the box
+                box.style.display = "none";
+                
+                // Check if game should end
+                if (currentAttempt >= totalAttempts) {
+                    endGame();
+                } else {
+                    // Create next box
+                    makeBox();
+                }
+            }
+            
+            // End the game
+            function endGame() {
+                isPlaying = false;
+                
+                if (timerTimeout) {
+                    clearTimeout(timerTimeout);
+                }
+                
+                // Hide box
+                box.style.display = "none";
+                
+                // Enable/disable buttons
+                startBtn.disabled = false;
+                
+                // Calculate final stats
+                const averageTime = reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length;
+                
+                // Show final score alert
+                setTimeout(() => {
+                    alert("המשחק הסתיים! זמן התגובה הממוצע שלך: " + averageTime.toFixed(3) + " שניות");
+                }, 300);
+            }
+            
+            // Reset game
+            function resetGame() {
+                isPlaying = false;
+                
+                if (timerTimeout) {
+                    clearTimeout(timerTimeout);
+                }
+                
+                // Hide box
+                box.style.display = "none";
+                
+                // Enable/disable buttons
+                startBtn.disabled = false;
+                resetBtn.disabled = true;
+                
+                // Reset displays
+                currentReactionTime.textContent = "0.000 שניות";
+                averageReactionTime.textContent = "0.000 שניות";
+                attemptsLeft.textContent = totalAttempts;
+                
+                // Reset variables
+                reactionTimes = [];
+                currentAttempt = 0;
+            }
+        });
+    </script>
+</body>
+</html>

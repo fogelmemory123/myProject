@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>משחק זיכרון מספרים - מתקדם</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-dark: #3a56d4;
+      --secondary: #7209b7;
+      --success: #06d6a0;
+      --danger: #ef476f;
+      --warning: #ffd166;
+      --info: #118ab2;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --bg-gradient: linear-gradient(135deg, #4361ee, #3a0ca3);
+      --card-gradient: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Rubik', sans-serif;
+      min-height: 100vh;
+      background: var(--bg-gradient);
+      color: var(--dark);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .game-container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 30px;
+      background: var(--card-gradient);
+      border-radius: 20px;
+      box-shadow: 0 20px 80px rgba(0, 0, 0, 0.15);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .game-container::before {
+      content: "";
+      position: absolute;
+      top: -10%;
+      right: -10%;
+      width: 200px;
+      height: 200px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .game-container::after {
+      content: "";
+      position: absolute;
+      bottom: -10%;
+      left: -10%;
+      width: 200px;
+      height: 200px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .game-title {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      position: relative;
+      z-index: 1;
+    }
+
+    .game-title span {
+      background-image: linear-gradient(45deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      position: relative;
+    }
+
+    .game-title span::after {
+      content: "";
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(45deg, var(--primary), var(--secondary));
+      border-radius: 10px;
+    }
+
+    .card-custom {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      padding: 25px;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .card-custom:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .number-display {
+      position: relative;
+      width: 100%;
+      height: 140px;
+      margin: 20px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 15px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    #flashing {
+      font-size: 5rem;
+      font-weight: 700;
+      text-align: center;
+      position: relative;
+      transition: all 0.3s ease;
+      padding: 20px;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .settings-section {
+      margin: 20px 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .settings-card {
+      background: white;
+      padding: 15px;
+      border-radius: 15px;
+      flex: 1;
+      min-width: 200px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .settings-label {
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 10px;
+      color: var(--dark);
+    }
+
+    .custom-select {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 10px;
+      border: 2px solid #eaeaea;
+      background-color: white;
+      font-size: 1rem;
+      color: var(--dark);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+      padding-right: 40px;
+    }
+
+    .custom-select:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    }
+
+    .btn-custom {
+      padding: 12px 30px;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      border: none;
+    }
+
+    .btn-custom:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-custom:active {
+      transform: translateY(0);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary-custom {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary-custom:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-danger-custom {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-success-custom {
+      background: var(--success);
+      color: white;
+    }
+
+    .buttons-container {
+      margin: 25px 0;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    hr.divider {
+      margin: 25px 0;
+      border: 0;
+      height: 1px;
+      background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0));
+    }
+
+    /* Input Screen */
+    .number-input-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin: 20px 0;
+    }
+
+    .number-input {
+      width: 55px;
+      height: 55px;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 500;
+      border: 2px solid #eaeaea;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      appearance: none;
+      -moz-appearance: textfield;
+    }
+
+    .number-input::-webkit-inner-spin-button,
+    .number-input::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .number-input:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    }
+
+    .input-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    .feedback-correct {
+      background-color: rgba(6, 214, 160, 0.2) !important;
+      border-color: var(--success) !important;
+    }
+
+    .feedback-incorrect {
+      background-color: rgba(239, 71, 111, 0.2) !important;
+      border-color: var(--danger) !important;
+    }
+
+    .solution-input {
+      background-color: rgba(6, 214, 160, 0.2);
+      border: 2px solid var(--success);
+      width: 55px;
+      height: 55px;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 500;
+      border-radius: 10px;
+    }
+
+    .result-card {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      margin: 20px 0;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: var(--primary);
+    }
+
+    .result-score {
+      font-size: 3rem;
+      font-weight: 700;
+      margin: 20px 0;
+      color: var(--success);
+    }
+
+    .progress-container {
+      width: 100%;
+      background-color: #f0f0f0;
+      border-radius: 10px;
+      margin: 25px 0;
+      height: 10px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(45deg, var(--primary), var(--secondary));
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      0% { transform: translateY(20px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.8s ease forwards;
+    }
+
+    .slide-up {
+      animation: slideUp 0.8s ease forwards;
+    }
+
+    .pulse {
+      animation: pulse 1s infinite;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .game-container {
+        padding: 20px;
+        margin: 20px;
+      }
+
+      .game-title {
+        font-size: 2rem;
+      }
+
+      #flashing {
+        font-size: 4rem;
+      }
+
+      .number-input {
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
+      }
+
+      .solution-input {
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .game-container {
+        padding: 15px;
+        margin: 15px;
+      }
+
+      .game-title {
+        font-size: 1.8rem;
+      }
+
+      #flashing {
+        font-size: 3.5rem;
+      }
+
+      .number-input {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+        margin: 3px;
+      }
+
+      .solution-input {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+        margin: 3px;
+      }
+
+      .btn-custom {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container slide-up">
+    <h1 class="game-title"><span>משחק זיכרון מספרים</span></h1>
+    
+    <!-- Game Setup Screen -->
+    <div id="game-setup" class="fade-in">
+      <div class="card-custom">
+        <div class="number-display">
+          <div id="flashing"></div>
+        </div>
+        
+        <div class="settings-section">
+          <div class="settings-card">
+            <div class="settings-label">מהירות הצגת המספרים</div>
+            <select id="rate" class="custom-select">
+              <option value="0.3">0.3 שניות</option>
+              <option value="0.5">0.5 שניות</option>
+              <option value="0.8">0.8 שניות</option>
+              <option value="1" selected>1 שנייה</option>
+              <option value="2">2 שניות</option>
+              <option value="3">3 שניות</option>
+              <option value="4">4 שניות</option>
+            </select>
+          </div>
+          
+          <div class="settings-card">
+            <div class="settings-label">מספר הספרות לזכירה</div>
+            <select id="digitCount" class="custom-select">
+              <option value="3">3 ספרות</option>
+              <option value="5">5 ספרות</option>
+              <option value="7">7 ספרות</option>
+              <option value="10" selected>10 ספרות</option>
+              <option value="15">15 ספרות</option>
+              <option value="20">20 ספרות</option>
+              <option value="25">25 ספרות</option>
+              <option value="30">30 ספרות</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="progress-container">
+          <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+        </div>
+      </div>
+      
+      <div class="buttons-container">
+        <button id="start-btn" class="btn-custom btn-primary-custom">
+          <i class="bi bi-play-fill"></i> התחל משחק
+        </button>
+        <button id="reset-btn" class="btn-custom btn-danger-custom">
+          <i class="bi bi-arrow-clockwise"></i> איפוס
+        </button>
+      </div>
+    </div>
+    
+    <!-- Game Input Screen (initially hidden) -->
+    <div id="game-input" class="fade-in" style="display: none;">
+      <div class="card-custom">
+        <h2 class="result-title">הזן את המספרים לפי הסדר שראית</h2>
+        
+        <div id="number-inputs" class="number-input-container">
+          <!-- Dynamic inputs will be generated here -->
+        </div>
+        
+        <div class="buttons-container">
+          <button id="check-btn" class="btn-custom btn-success-custom">
+            <i class="bi bi-check-lg"></i> בדוק תוצאות
+          </button>
+          <button id="new-game-btn" class="btn-custom btn-primary-custom" style="display: none;">
+            <i class="bi bi-play-fill"></i> משחק חדש
+          </button>
+        </div>
+      </div>
+      
+      <!-- Results section (initially hidden) -->
+      <div id="results-section" class="result-card" style="display: none;">
+        <h2 class="result-title">התוצאות שלך</h2>
+        <div class="result-score">
+          <span id="score-value">0</span>/<span id="total-value">0</span>
+        </div>
+        <div id="score-message" class="mb-4">ניסיון טוב!</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // DOM Elements
+      const flashingElement = document.getElementById('flashing');
+      const startButton = document.getElementById('start-btn');
+      const resetButton = document.getElementById('reset-btn');
+      const checkButton = document.getElementById('check-btn');
+      const newGameButton = document.getElementById('new-game-btn');
+      const gameSetup = document.getElementById('game-setup');
+      const gameInput = document.getElementById('game-input');
+      const numberInputs = document.getElementById('number-inputs');
+      const resultsSection = document.getElementById('results-section');
+      const scoreValue = document.getElementById('score-value');
+      const totalValue = document.getElementById('total-value');
+      const scoreMessage = document.getElementById('score-message');
+      const progressBar = document.getElementById('progress-bar');
+      
+      // Game variables
+      let digits = [];
+      let digitCount = 10;
+      let displaySpeed = 1;
+      let isPlaying = false;
+      let currentIndex = 0;
+      
+      // Initialize game
+      function init() {
+        startButton.addEventListener('click', startGame);
+        resetButton.addEventListener('click', resetGame);
+        checkButton.addEventListener('click', checkResults);
+        newGameButton.addEventListener('click', newGame);
+        
+        document.getElementById('digitCount').addEventListener('change', function() {
+          digitCount = parseInt(this.value);
+        });
+        
+        document.getElementById('rate').addEventListener('change', function() {
+          displaySpeed = parseFloat(this.value);
+        });
+      }
+      
+      // Generate random digits
+      function generateDigits(count) {
+        const digits = [];
+        for (let i = 0; i < count; i++) {
+          digits.push(Math.floor(Math.random() * 10));
+        }
+        return digits;
+      }
+      
+      // Display digits one by one
+      async function displayDigits() {
+        isPlaying = true;
+        startButton.disabled = true;
+        resetButton.disabled = true;
+        
+        // Generate random digits
+        digits = generateDigits(digitCount);
+        
+        // Display each digit
+        for (let i = 0; i < digits.length; i++) {
+          // Update progress bar
+          progressBar.style.width = `${((i + 1) / digits.length) * 100}%`;
+          
+          // Display the digit with random colors
+          flashingElement.textContent = digits[i];
+          flashingElement.style.color = getRandomDarkColor();
+          flashingElement.style.backgroundColor = getRandomLightColor();
+          
+          // Wait before showing the next digit
+          await sleep(displaySpeed * 1000);
+        }
+        
+        // Clear display
+        flashingElement.textContent = '';
+        flashingElement.style.backgroundColor = '';
+        
+        // Show input screen
+        gameSetup.style.display = 'none';
+        gameInput.style.display = 'block';
+        
+        // Generate input fields
+        generateInputFields(digits.length);
+        
+        isPlaying = false;
+      }
+      
+      // Generate input fields for user to enter digits
+      function generateInputFields(count) {
+        numberInputs.innerHTML = '';
+        
+        const rowSize = 10; // Number of inputs per row
+        let currentRow;
+        
+        for (let i = 0; i < count; i++) {
+          // Create a new row every 10 inputs
+          if (i % rowSize === 0) {
+            currentRow = document.createElement('div');
+            currentRow.className = 'input-row';
+            numberInputs.appendChild(currentRow);
+          }
+          
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.className = 'number-input';
+          input.id = `input-${i}`;
+          input.min = 0;
+          input.max = 9;
+          
+          // Add event listeners for better UX
+          input.addEventListener('keydown', function(e) {
+            handleInputKeyDown(e, i, count);
+          });
+          
+          input.addEventListener('input', function() {
+            // Auto-advance to next input when a digit is entered
+            if (this.value.length === 1 && i < count - 1) {
+              document.getElementById(`input-${i + 1}`).focus();
+            }
+            
+            // Ensure only one digit
+            if (this.value.length > 1) {
+              this.value = this.value.slice(0, 1);
+            }
+          });
+          
+          currentRow.appendChild(input);
+        }
+        
+        // Focus on first input
+        document.getElementById('input-0').focus();
+      }
+      
+      // Handle keyboard navigation between inputs
+      function handleInputKeyDown(event, index, totalCount) {
+        const key = event.key;
+        
+        if (key === 'ArrowRight' && index > 0) {
+          event.preventDefault();
+          document.getElementById(`input-${index - 1}`).focus();
+        } else if (key === 'ArrowLeft' && index < totalCount - 1) {
+          event.preventDefault();
+          document.getElementById(`input-${index + 1}`).focus();
+        } else if (key === 'Backspace' && document.getElementById(`input-${index}`).value === '' && index > 0) {
+          event.preventDefault();
+          document.getElementById(`input-${index - 1}`).focus();
+        }
+      }
+      
+      // Check user's results
+      function checkResults() {
+        let score = 0;
+        
+        // Compare each input with the corresponding digit
+        for (let i = 0; i < digits.length; i++) {
+          const input = document.getElementById(`input-${i}`);
+          const userDigit = parseInt(input.value) || 0;
+          
+          if (userDigit === digits[i]) {
+            input.classList.add('feedback-correct');
+            score++;
+          } else {
+            input.classList.add('feedback-incorrect');
+            
+            // Create solution display
+            const solution = document.createElement('input');
+            solution.type = 'text';
+            solution.className = 'solution-input';
+            solution.value = digits[i];
+            solution.readOnly = true;
+            
+            // Replace input with solution (after a delay for animation)
+            setTimeout(() => {
+              input.parentNode.replaceChild(solution, input);
+            }, 1000);
+          }
+        }
+        
+        // Display results
+        resultsSection.style.display = 'block';
+        scoreValue.textContent = score;
+        totalValue.textContent = digits.length;
+        
+        // Set score message based on performance
+        const percentage = (score / digits.length) * 100;
+        if (percentage === 100) {
+          scoreMessage.textContent = 'מושלם! זיכרון מדהים!';
+          scoreValue.style.color = '#06d6a0';
+        } else if (percentage >= 80) {
+          scoreMessage.textContent = 'כמעט מושלם! זיכרון מצויין!';
+          scoreValue.style.color = '#118ab2';
+        } else if (percentage >= 60) {
+          scoreMessage.textContent = 'טוב מאד! המשך להתאמן!';
+          scoreValue.style.color = '#073b4c';
+        } else if (percentage >= 40) {
+          scoreMessage.textContent = 'לא רע! אתה יכול להשתפר!';
+          scoreValue.style.color = '#ffd166';
+        } else {
+          scoreMessage.textContent = 'המשך להתאמן, הזיכרון שלך ישתפר!';
+          scoreValue.style.color = '#ef476f';
+        }
+        
+        // Show new game button and hide check button
+        checkButton.style.display = 'none';
+        newGameButton.style.display = 'inline-block';
+        
+        // Disable all inputs
+        const inputs = document.querySelectorAll('.number-input');
+        inputs.forEach(input => {
+          input.disabled = true;
+        });
+      }
+      
+      // Start a new game
+      function startGame() {
+        if (isPlaying) return;
+        displayDigits();
+      }
+      
+      // Reset the game
+      function resetGame() {
+        location.reload();
+      }
+      
+      // New game after results
+      function newGame() {
+        gameSetup.style.display = 'block';
+        gameInput.style.display = 'none';
+        resultsSection.style.display = 'none';
+        
+        // Reset progress bar
+        progressBar.style.width = '0%';
+        
+        // Enable buttons
+        startButton.disabled = false;
+        resetButton.disabled = false;
+        checkButton.style.display = 'inline-block';
+        newGameButton.style.display = 'none';
+        
+        // Clear display
+        flashingElement.textContent = '';
+        flashingElement.style.backgroundColor = '';
+      }
+      
+      // Helper functions
+      function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+      
+      function getRandomLightColor() {
+        const hue = Math.floor(Math.random() * 360);
+        return `hsl(${hue}, 80%, 95%)`;
+      }
+      
+      function getRandomDarkColor() {
+        const hue = Math.floor(Math.random() * 360);
+        return `hsl(${hue}, 80%, 40%)`;
+      }
+      
+      // Initialize the game
+      init();
+    });
+  </script>
+</body>
+</html>

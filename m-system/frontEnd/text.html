@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>משחק התאמת טקסט</title>
+
+  <!-- Bootstrap + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f4f7;
+      padding-bottom: 100px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin-top: 50px;
+    }
+
+    #random1, #random2 {
+      font-size: 28px;
+      padding: 12px;
+      background-color: white;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .button {
+      font-size: 20px;
+      padding: 10px 25px;
+      margin: 10px;
+    }
+
+    #score, #countdown {
+      font-size: 20px;
+      margin-top: 15px;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background-color: #343a40;
+      color: white;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">חדר כושר למוח</a>
+    </div>
+  </nav>
+
+  <div class="container text-center">
+    <h2 class="my-4">משחק התאמת מחרוזות</h2>
+
+    <div id="random1"></div>
+    <div id="random2"></div>
+
+    <button id="matchBtn" class="btn btn-success button">מתאים</button>
+    <button id="noMatchBtn" class="btn btn-danger button">לא מתאים</button>
+
+    <div id="score">הניקוד שלך: 0</div>
+    <div id="countdown">זמן שנשאר: 20 שניות</div>
+
+    <button id="restartBtn" class="btn btn-dark button mt-4">משחק חדש</button>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 fogelmemory - כל הזכויות שמורות</p>
+  </footer>
+
+  <script>
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const baseLength = 6;
+    const timeLimit = 20;
+    let timeLeft = timeLimit;
+    let score = 0;
+    let timer;
+
+    function generateString(len) {
+      let str = '';
+      for (let i = 0; i < len; i++) {
+        str += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return str;
+    }
+
+    function displayStrings() {
+      const match = Math.random() < 0.5;
+      const base = generateString(baseLength);
+      let variant = base;
+      if (!match) {
+        const idx = Math.floor(Math.random() * base.length);
+        const newChar = chars[Math.floor(Math.random() * chars.length)];
+        variant = base.substring(0, idx) + newChar + base.substring(idx + 1);
+      }
+      document.getElementById('random1').textContent = base;
+      document.getElementById('random2').textContent = variant;
+      document.getElementById('random1').dataset.match = (base === variant);
+    }
+
+    function checkAnswer(isMatch) {
+      const realMatch = (document.getElementById('random1').textContent === document.getElementById('random2').textContent);
+      score += (isMatch === realMatch) ? 1 : -1;
+      document.getElementById('score').textContent = `הניקוד שלך: ${score}`;
+      displayStrings();
+    }
+
+    function startTimer() {
+      timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('countdown').textContent = `זמן שנשאר: ${timeLeft} שניות`;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          alert(`המשחק הסתיים! ניקוד סופי: ${score}`);
+          resetGame();
+        }
+      }, 1000);
+    }
+
+    function resetGame() {
+      score = 0;
+      timeLeft = timeLimit;
+      document.getElementById('score').textContent = 'הניקוד שלך: 0';
+      document.getElementById('countdown').textContent = `זמן שנשאר: ${timeLeft} שניות`;
+      clearInterval(timer);
+      displayStrings();
+      startTimer();
+    }
+
+    // Event Listeners
+    document.getElementById('matchBtn').addEventListener('click', () => checkAnswer(true));
+    document.getElementById('noMatchBtn').addEventListener('click', () => checkAnswer(false));
+    document.getElementById('restartBtn').addEventListener('click', () => resetGame());
+
+    // Init
+    displayStrings();
+    startTimer();
+  </script>
+</body>
+</html>

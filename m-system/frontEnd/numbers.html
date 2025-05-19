@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משחק התאמת זוגות מספרים</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #2196F3;
+            --accent-color: #FF9800;
+            --dark-color: #333;
+            --light-color: #f4f4f4;
+            --danger-color: #f44336;
+            --success-color: #4CAF50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin: 0 10px; /* Add horizontal margin */
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        h1 {
+            color: var(--dark-color);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: var(--light-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            color: var(--dark-color);
+            opacity: 0.8;
+        }
+
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        #timer-value, #pairs-value {
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* Always 4 cards per row */
+            grid-gap: 12px; /* Increased gap */
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 20px; /* Add padding for mobile devices */
+        }
+
+        @media (max-width: 600px) {
+            .game-board {
+                grid-gap: 18px; /* Even more gap for mobile */
+                padding: 0 30px; /* More padding on smaller screens */
+            }
+        }
+
+        @media (max-width: 400px) {
+            .game-board {
+                grid-gap: 15px; /* Slightly reduced gap for very small screens to fit 4 cards */
+                padding: 0 15px; /* Less padding to make room for 4 cards */
+            }
+        }
+
+        .card {
+            aspect-ratio: 1/1;
+            position: relative;
+            cursor: pointer;
+            border-radius: 10px;
+            background-color: var(--secondary-color);
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            padding: 10px; /* Add padding inside cards */
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                font-size: 1.8rem; /* Keep same font size */
+            }
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .card.selected {
+            background-color: var(--accent-color);
+            transform: scale(0.95);
+        }
+
+        .card.matched {
+            background-color: var(--success-color);
+            opacity: 0.8;
+            cursor: default;
+        }
+
+        .card.matched:hover {
+            transform: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn i {
+            font-size: 1.2rem;
+        }
+
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #end-game-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        #end-game-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        #end-game-modal.active .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .modal-title {
+            color: var(--primary-color);
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+        }
+
+        .modal-stats {
+            margin-bottom: 25px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 1.1rem;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .confetti {
+            display: none; /* Hiding confetti elements as requested */
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark-color);
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .pulse {
+            animation: pulse 0.6s ease;
+        }
+
+        .shake {
+            animation: shake 0.5s ease;
+        }
+
+        /* Dark theme */
+        body.dark-theme {
+            background: linear-gradient(135deg, #2c3e50 0%, #1a1a2e 100%);
+        }
+
+        body.dark-theme .container {
+            background-color: rgba(40, 44, 52, 0.9);
+        }
+
+        body.dark-theme h1, 
+        body.dark-theme .info-label {
+            color: #f4f4f4;
+        }
+
+        body.dark-theme .game-info {
+            background-color: rgba(30, 34, 42, 0.9);
+        }
+
+        body.dark-theme .theme-toggle {
+            color: #f4f4f4;
+        }
+
+        .difficulty-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            margin-bottom: 25px;
+        }
+
+        .difficulty-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--primary-color);
+            background-color: transparent;
+            color: var(--primary-color);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .difficulty-btn:hover, .difficulty-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .instruction {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            color: var(--dark-color);
+        }
+
+        body.dark-theme .instruction {
+            color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+   <nav class="navbar navbar-light bg-light shadow-sm">
+  <div class="container-fluid justify-content-between">
+    <span class="navbar-brand">🧠 חדר כושר למוח</span>
+    <br><br>
+    <a href="index.html" class="btn btn-primary">דף הבית</a>
+  </div>
+</nav>
+<br><br><br>
+ 
+
+    <div class="container">
+        <header>
+            <h1>התאמת מספרים</h1>
+            <div class="difficulty-options">
+                <button class="difficulty-btn" data-difficulty="easy">קל</button>
+                <button class="difficulty-btn active" data-difficulty="medium">בינוני</button>
+                <button class="difficulty-btn" data-difficulty="hard">קשה</button>
+            </div>
+            <div class="instruction">מצא זוגות של מספרים זהים</div>
+        </header>
+
+        <div class="game-info">
+            <div class="info-item">
+                <span class="info-label">זמן</span>
+                <span id="timer-value" class="info-value">00:00</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">זוגות</span>
+                <span id="pairs-value" class="info-value">0 / 9</span>
+            </div>
+        </div>
+
+        <div id="game-board" class="game-board"></div>
+
+        <div class="controls">
+            <button id="start-btn" class="btn btn-primary">
+                <i class="fas fa-play"></i> התחל משחק
+            </button>
+            <button id="restart-btn" class="btn btn-secondary" disabled>
+                <i class="fas fa-redo"></i> משחק חדש
+            </button>
+        </div>
+    </div>
+
+    <div id="end-game-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">כל הכבוד! 🎉</h2>
+            <div class="modal-stats">
+                <div class="stat-item">
+                    <span>זמן:</span>
+                    <span id="final-time" class="stat-value">00:00</span>
+                </div>
+                <div class="stat-item">
+                    <span>צעדים:</span>
+                    <span id="final-moves" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>דיוק:</span>
+                    <span id="final-accuracy" class="stat-value">0%</span>
+                </div>
+            </div>
+            <button id="play-again-btn" class="btn btn-primary">
+                <i class="fas fa-play"></i> שחק שוב
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Game variables
+            let gameStarted = false;
+            let gameTimer;
+            let startTime;
+            let firstCard = null;
+            let secondCard = null;
+            let lockBoard = false;
+            let matchedPairs = 0;
+            let totalPairs = 9;
+            let moves = 0;
+            let difficulty = 'medium';
+            const difficultySettings = {
+                'easy': {
+                    maxNumber: 6,
+                    boardSize: 12 // 6 pairs
+                },
+                'medium': {
+                    maxNumber: 9,
+                    boardSize: 18 // 9 pairs
+                },
+                'hard': {
+                    maxNumber: 12,
+                    boardSize: 24 // 12 pairs
+                }
+            };
+            
+            // Safely get DOM elements with error checking
+            function getElement(id) {
+                const element = document.getElementById(id);
+                if (!element) {
+                    console.error(`Element with id '${id}' not found!`);
+                }
+                return element;
+            }
+            
+            // DOM Elements - with safety checks
+            const gameBoard = getElement('game-board');
+            const startBtn = getElement('start-btn');
+            const restartBtn = getElement('restart-btn');
+            const timerValue = getElement('timer-value');
+            const pairsValue = getElement('pairs-value');
+            const endGameModal = getElement('end-game-modal');
+            const finalTime = getElement('final-time');
+            const finalMoves = getElement('final-moves');
+            const finalAccuracy = getElement('final-accuracy');
+            const playAgainBtn = getElement('play-again-btn');
+            const themeToggle = getElement('theme-toggle');
+            const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+            
+            // Safely add event listener
+            function addSafeEventListener(element, event, handler) {
+                if (element) {
+                    element.addEventListener(event, handler);
+                }
+            }
+            
+            // Event Listeners - with safety checks
+            addSafeEventListener(startBtn, 'click', startGame);
+            addSafeEventListener(restartBtn, 'click', resetGame);
+            addSafeEventListener(playAgainBtn, 'click', resetGame);
+            addSafeEventListener(themeToggle, 'click', toggleTheme);
+            
+            // Add event listeners to difficulty buttons
+            difficultyBtns.forEach(btn => {
+                addSafeEventListener(btn, 'click', function() {
+                    if (!gameStarted) {
+                        difficultyBtns.forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        difficulty = this.dataset.difficulty;
+                        
+                        // Update totalPairs based on difficulty
+                        const settings = difficultySettings[difficulty];
+                        totalPairs = settings.boardSize / 2;
+                        if (pairsValue) {
+                            pairsValue.textContent = `0 / ${totalPairs}`;
+                        }
+                    }
+                });
+            });
+            
+            // Functions
+            function startGame() {
+                if (gameStarted) return;
+                
+                gameStarted = true;
+                if (startBtn) startBtn.disabled = true;
+                if (restartBtn) restartBtn.disabled = false;
+                
+                // Disable difficulty buttons
+                difficultyBtns.forEach(btn => {
+                    if (btn) btn.disabled = true;
+                });
+                
+                createBoard();
+                startTimer();
+            }
+            
+            function createBoard() {
+                if (!gameBoard) return;
+                
+                gameBoard.innerHTML = '';
+                
+                const settings = difficultySettings[difficulty];
+                
+                // Create pairs of numbers
+                const numbers = [];
+                for (let i = 1; i <= settings.maxNumber; i++) {
+                    numbers.push(i, i); // Add each number twice
+                }
+                
+                // Shuffle array
+                shuffle(numbers);
+                
+                // Create cards
+                for (let i = 0; i < settings.boardSize; i++) {
+                    const card = document.createElement('div');
+                    card.classList.add('card');
+                    card.textContent = numbers[i];
+                    card.dataset.value = numbers[i];
+                    card.addEventListener('click', flipCard);
+                    
+                    gameBoard.appendChild(card);
+                }
+                
+                // Update pairs counter
+                if (pairsValue) {
+                    pairsValue.textContent = `0 / ${totalPairs}`;
+                }
+            }
+            
+            function flipCard() {
+                if (lockBoard) return;
+                if (this === firstCard) return;
+                if (this.classList.contains('matched')) return;
+                
+                this.classList.add('selected');
+                
+                if (!firstCard) {
+                    // First click
+                    firstCard = this;
+                    return;
+                }
+                
+                // Second click
+                secondCard = this;
+                moves++;
+                checkForMatch();
+            }
+            
+            function checkForMatch() {
+                // Safety check
+                if (!firstCard || !secondCard) return;
+                
+                let isMatch = firstCard.dataset.value === secondCard.dataset.value;
+                
+                if (isMatch) {
+                    disableCards();
+                } else {
+                    unflipCards();
+                }
+            }
+            
+            function disableCards() {
+                // Safety check
+                if (!firstCard || !secondCard) return;
+                
+                // Store references locally to prevent null issues if variables get reset
+                const card1 = firstCard;
+                const card2 = secondCard;
+                
+                // Add pulse animation before removing
+                if (card1 && card1.classList) card1.classList.add('pulse');
+                if (card2 && card2.classList) card2.classList.add('pulse');
+                
+                // Add matched class for styling during animation
+                if (card1 && card1.classList) card1.classList.add('matched');
+                if (card2 && card2.classList) card2.classList.add('matched');
+                
+                matchedPairs++;
+                if (pairsValue) {
+                    pairsValue.textContent = `${matchedPairs} / ${totalPairs}`;
+                }
+                
+                // Wait briefly for the pulse animation, then fade out and remove
+                setTimeout(() => {
+                    // Safety check again in case cards were removed somehow
+                    if (!card1 || !card2) {
+                        resetBoard();
+                        return;
+                    }
+                    
+                    // Create confetti at the matched cards before they disappear
+                    // createConfetti(card1);
+                    // createConfetti(card2);
+                    
+                    // Add fade-out effect with proper null checks
+                    try {
+                        if (card1 && card1.style) {
+                            card1.style.transition = "all 0.5s ease";
+                            card1.style.opacity = "0";
+                            card1.style.transform = "scale(0.1)";
+                        }
+                        
+                        if (card2 && card2.style) {
+                            card2.style.transition = "all 0.5s ease";
+                            card2.style.opacity = "0";
+                            card2.style.transform = "scale(0.1)";
+                        }
+                        
+                        // After fade-out, completely remove the cards from the DOM
+                        setTimeout(() => {
+                            try {
+                                if (card1 && card1.parentNode) card1.parentNode.removeChild(card1);
+                                if (card2 && card2.parentNode) card2.parentNode.removeChild(card2);
+                            } catch (e) {
+                                console.error("Error removing matched cards:", e);
+                            }
+                            
+                            // Check if game is complete
+                            if (matchedPairs === totalPairs) {
+                                setTimeout(() => {
+                                    endGame();
+                                }, 500);
+                            }
+                        }, 500);
+                    } catch (e) {
+                        console.error("Error animating matched cards:", e);
+                        
+                        // Fallback: remove cards immediately
+                        try {
+                            if (card1 && card1.parentNode) card1.parentNode.removeChild(card1);
+                            if (card2 && card2.parentNode) card2.parentNode.removeChild(card2);
+                        } catch (e) {
+                            console.error("Error in fallback card removal:", e);
+                        }
+                    }
+                }, 300);
+                
+                // Reset board variables
+                resetBoard();
+            }
+            
+            function unflipCards() {
+                // Safety check
+                if (!firstCard || !secondCard) return;
+                
+                lockBoard = true;
+                
+                // Add shake animation to show non-match
+                firstCard.classList.add('shake');
+                secondCard.classList.add('shake');
+                
+                setTimeout(() => {
+                    if (firstCard) firstCard.classList.remove('selected', 'shake');
+                    if (secondCard) secondCard.classList.remove('selected', 'shake');
+                    
+                    resetBoard();
+                }, 800);
+            }
+            
+            function resetBoard() {
+                // Reset board state
+                firstCard = null;
+                secondCard = null;
+                lockBoard = false;
+            }
+            
+            function shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+            
+            function startTimer() {
+                startTime = Date.now();
+                
+                gameTimer = setInterval(() => {
+                    const elapsedTime = Date.now() - startTime;
+                    const minutes = Math.floor(elapsedTime / 60000);
+                    const seconds = Math.floor((elapsedTime % 60000) / 1000);
+                    
+                    if (timerValue) {
+                        timerValue.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    }
+                }, 1000);
+            }
+            
+            function stopTimer() {
+                if (gameTimer) {
+                    clearInterval(gameTimer);
+                }
+            }
+            
+            function endGame() {
+                stopTimer();
+                
+                // Calculate statistics
+                const elapsedTime = Date.now() - startTime;
+                const minutes = Math.floor(elapsedTime / 60000);
+                const seconds = Math.floor((elapsedTime % 60000) / 1000);
+                const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Update modal content
+                if (finalTime) finalTime.textContent = formattedTime;
+                if (finalMoves) finalMoves.textContent = moves.toString();
+                
+                // Calculate accuracy
+                const minMoves = totalPairs * 2; // Perfect game
+                const accuracy = Math.floor((minMoves / moves) * 100);
+                if (finalAccuracy) finalAccuracy.textContent = `${accuracy}%`;
+                
+                // Show modal
+                if (endGameModal) {
+                    endGameModal.classList.add('active');
+                    // createModalConfetti();
+                }
+            }
+            
+            function resetGame() {
+                stopTimer();
+                
+                gameStarted = false;
+                firstCard = null;
+                secondCard = null;
+                lockBoard = false;
+                matchedPairs = 0;
+                moves = 0;
+                
+                if (timerValue) timerValue.textContent = '00:00';
+                
+                const settings = difficultySettings[difficulty];
+                totalPairs = settings.boardSize / 2;
+                if (pairsValue) pairsValue.textContent = `0 / ${totalPairs}`;
+                
+                if (startBtn) startBtn.disabled = false;
+                if (restartBtn) restartBtn.disabled = true;
+                
+                // Enable difficulty buttons
+                difficultyBtns.forEach(btn => {
+                    if (btn) btn.disabled = false;
+                });
+                
+                // Hide modal
+                if (endGameModal) {
+                    endGameModal.classList.remove('active');
+                }
+                
+                // Clear board
+                if (gameBoard) {
+                    gameBoard.innerHTML = '';
+                }
+            }
+            
+            function createConfetti(element) {
+                // No confetti implementation - removed as requested
+            }
+            
+            function createModalConfetti() {
+                // No confetti implementation - removed as requested
+            }
+            
+            function toggleTheme() {
+                document.body.classList.toggle('dark-theme');
+                
+                // Update theme icon
+                if (themeToggle) {
+                    const icon = themeToggle.querySelector('i');
+                    if (icon) {
+                        if (document.body.classList.contains('dark-theme')) {
+                            icon.classList.remove('fa-moon');
+                            icon.classList.add('fa-sun');
+                        } else {
+                            icon.classList.remove('fa-sun');
+                            icon.classList.add('fa-moon');
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
